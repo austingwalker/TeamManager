@@ -43,42 +43,114 @@ function Player(name, position, offense, defense) {
 }
 
 
-var team = [];
+
 var starters = [];
 var subs = [];
+var team = starters.concat(subs);
 var rounds = 0;
+
 var score = 0;
 
 
 
-var playGame = function () {
+var playRound = function () {
+    rounds++;
+    if (rounds < 5) {
 
 
-    if (rounds <= 5) {
-        var random1 = Math.floor(Math.random() * 20) + 1
-        var random2 = Math.floor(Math.random() * 20) + 1
+        console.log("----------\nROUND " + rounds + "\n----------");
 
-        var offenseSum = starters[0].offense + starters[1].offense
+        var opponentOffense = Math.floor(Math.random() * 20) + 1
+        var opponentDefense = Math.floor(Math.random() * 20) + 1
 
-        var defenseSum = starters[0].defense + starters[1].defense
+        var offenseSum = 0;
 
-        if (random1 < offenseSum) {
-            score++
-            console.log("\nScore: " + score);
+        var defenseSum = 0;
+
+        for (var i = 0; i < starters.length; i++) {
+            offenseSum += starters[i].offense
+            defenseSum += starters[i].defense
         }
 
-        if (random2 > defenseSum) {
-            score--
-            console.log("\nScore: " + score);
+        console.log("Team Offense: " + offenseSum);
+        console.log("Team defense: " + defenseSum);
+        console.log("Random O: " + opponentOffense);
+        console.log("Random D: " + opponentDefense);
+
+        if (offenseSum > opponentDefense) {
+            score++;
+            console.log("\nYou scored a point!");
+        }
+
+        if (defenseSum < opponentOffense) {
+            score--;
+            console.log("\nYou were scored on!");
 
 
         }
 
+        inquirer.prompt([{
+            name: "confirm",
+            type: "confirm",
+            message: "Would you like to make a substitution?"
+        }]).then(function (answer) {
+            if (answer.confirm === true) {
+                inquirer.prompt([{
+                    name: "sub",
+                    type: "rawlist",
+                    message: "Who would you like to sub in?",
+                    choices: subs
+                }]).then(function (subIn) {
+                    var sideline = {};
+                    var number = 0;
+                    for (var i = 0; i < subs.length; i++) {
+                        if (subs[i].name === subIn.sub) {
+                            number = i;
+                            sideline = subs[i]
+                            console.log("-----")
+                            console.log("sideline " + sideline)
+                            console.log("-----")
+                        }
+                    }
+                    inquirer.prompt([{
+                        name: "sub",
+                        type: "rawlist",
+                        message: "Who would you like to sub out?",
+                        choices: starters
+                    }]).then(function (subOut) {
 
-        rounds++
-        playGame();
-    }
-    else {
+                        for (var i = 0; i < starters.length; i++) {
+                            if (starters[i].name === subOut.sub) {
+                                subs[number] = starters[i];
+                                starters[i] = sideline;
+                                console.log("-----")
+                            console.log("starters " + starters)
+                            console.log("-----")
+                                console.log("Substitution Made!");
+                                
+                            }
+
+                        }
+
+                        playRound();
+                        
+                    });
+
+                });
+            
+            } else {
+
+                playRound();
+            
+            }
+        
+        });
+
+        // function playGame(){
+        //     if(rounds < ROUND_MAX){
+        //         playRound();
+    } else {
+        console.log("Game over!")
 
         console.log("Final Score: " + score);
         if (score >= 0) {
@@ -95,8 +167,18 @@ var playGame = function () {
             }
         }
     }
-
 }
+        
+       
+    
+    
+
+      
+
+ 
+    
+
+
 
 var createPlayer = function () {
 
@@ -118,22 +200,22 @@ var createPlayer = function () {
             {
                 name: "offense",
                 message: "On a scale of 1-10 how good is their offense?",
-                // validate: function(value){
-                //     if(isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= 10){
-                //         return true;
-                //     }
-                //     return false;
-                // }
+                validate: function(value){
+                    if(isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= 10){
+                        return true;
+                    }
+                    return false;
+                }
             },
             {
                 name: "defense",
                 message: "On a scale of 1-10 how good is their defense?",
-                // validate: function(value){
-                //     if(isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= 10){
-                //         return true;
-                //     }
-                //     return false;
-                // }
+                validate: function(value){
+                    if(isNaN(value) === false && parseInt(value) > 0 && parseInt(value) <= 10){
+                        return true;
+                    }
+                    return false;
+                }
             }
 
 
@@ -161,7 +243,7 @@ var createPlayer = function () {
         for (var i = 0; i < team.length; i++) {
             team[i].printStats();
         }
-        playGame();
+        playRound();
     }
 };
 
